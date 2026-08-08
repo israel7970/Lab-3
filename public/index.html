@@ -1,24 +1,68 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Lab 3</title>
+        <title>Login Page</title>
         <script>
             async function init() {
-                var response = await fetch("/display");
-                document.getElementById("counter").innerHTML = (await response.json()).count;
-                
-                var button = document.getElementById("myButton");
-                button.addEventListener("click", buttonClick);
+                var regButton = document.getElementById("regButton");
+                regButton.addEventListener("click", registerUser);
+
+                var logButton = document.getElementById("logButton");
+                logButton.addEventListener("click", loginUser);
             }
-            async function buttonClick() {
-                var response = await fetch("/increment", {method: "POST"});
-                document.getElementById("counter").innerHTML = (await response.json()).count;
+
+            async function registerUser() {
+                var username = document.getElementById("regUsername").value;
+                var password = document.getElementById("regPassword").value;
+
+                var response = await fetch("/register", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ username: username, password: password })
+                });
+
+                var result = await response.json();
+                if (result.success) {
+                    document.getElementById("regMessage").innerHTML = "Registration successful! You can now log in.";
+                    document.getElementById("regUsername").value = "";
+                    document.getElementById("regPassword").value = "";
+                } else {
+                    document.getElementById("regMessage").innerHTML = "Registration failed: " + result.message;
+                }
             }
+
+            async function loginUser() {
+                var username = document.getElementById("logUsername").value;
+                var password = document.getElementById("logPassword").value;
+
+                var response = await fetch("/login", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ username: username, password: password })
+                });
+
+                var result = await response.json();
+                if (result.success) {
+                    window.location.href = "main.html";
+                } else {
+                    document.getElementById("logMessage").innerHTML = "Login failed.";
+                }
+            }
+
             window.addEventListener("load", init);
         </script>
     </head>
     <body>
-        <h1 id="counter"></h1>
-        <input type="button" id="myButton" value="Increment">
+        <h1>Register</h1>
+        <label> Username: <input type="text" id="regUsername"></label><br><br>
+        <label> Password: <input type="password" id="regPassword"></label><br><br>
+        <input type="button" id="regButton" value="Register"><br><br>
+        <div id="regMessage"></div><br><br><br><br><br>
+
+        <h1>Login</h1>
+        <label> Username: <input type="text" id="logUsername"></label><br><br>
+        <label> Password: <input type="password" id="logPassword"></label><br><br>
+        <input type="button" id="logButton" value="Login"><br><br>
+        <div id="logMessage"></div>
     </body>
 </html>

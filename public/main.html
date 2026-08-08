@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Counter page</title>
+        <script>
+            async function init() {
+                var response = await fetch("/display");
+                if (!response.ok) {
+                    window.location.href = "index.html";
+                    return;
+                }
+                document.getElementById("counter").innerHTML = (await response.json()).count;
+                
+                var button = document.getElementById("myButton");
+                button.addEventListener("click", buttonClick);
+
+                var logoutLink = document.getElementById("logoutLink");
+                logoutLink.addEventListener("click", logout);
+            }
+
+            async function buttonClick() {
+                var response = await fetch("/increment", {method: "POST"});
+                if (!response.ok) {
+                    window.location.href = "index.html";
+                    return;
+                }
+                document.getElementById("counter").innerHTML = (await response.json()).count;
+            }
+
+            async function logout(event) {
+                event.preventDefault();
+                var response = await fetch("/logout", {method: "POST"});
+                var result = await response.json();
+                if (result.success) {
+                    window.location.href = "index.html";
+                }
+            }
+
+            window.addEventListener("load", init);
+        </script>
+    </head>
+    <body>
+        <h1 id="counter"></h1>
+        <input type="button" id="myButton" value="Increment"><br><br>
+        <a href="#" id="logoutLink">Logout</a>
+    </body>
+</html>
