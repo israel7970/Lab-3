@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Lab 3</title>
+        <script>
+            async function init() {
+                var response = await fetch("/display");
+                document.getElementById("counter").innerHTML = (await response.json()).count;
+                
+                var button = document.getElementById("myButton");
+                button.addEventListener("click", buttonClick);
+            }
+            async function buttonClick() {
+                var response = await fetch("/increment", {method: "POST"});
+                document.getElementById("counter").innerHTML = (await response.json()).count;
+            }
+            window.addEventListener("load", init);
+        </script>
+    </head>
+    <body>
+        <h1 id="counter"></h1>
+        <input type="button" id="myButton" value="Increment">
+    </body>
+</html>
