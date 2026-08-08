@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2/promise');
 const session = require('express-session');
+const bcrypt = require('bcrypt');
 
 const app = express();
 app.use(express.static('public'));
@@ -68,7 +69,8 @@ app.post('/register', async (req, res) => {
       res.json({ success: false, message: 'Username already exists' });
     }
     else {
-      const [rows] = await pool.query('INSERT INTO user (username, password) VALUES (?, ?)', [username, password]);
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const [rows] = await pool.query('INSERT INTO user (username, password) VALUES (?, ?)', [username, hashedPassword]);
       res.json({ success: true });
     }
   } 
@@ -85,11 +87,18 @@ app.post('/register', async (req, res) => {
 app.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    const [rows] = await pool.query('SELECT * FROM user WHERE username = ? AND password = ?', [username, password]);
+    const [rows] = await pool.query('SELECT * FROM user WHERE username = ?', [username]);
     if (rows.length > 0) {
-      req.session.userid = rows[0].userid;
-      res.json({ success: true });
-    } else {
+      const isMatch = await bcrypt.compare(password, rows[0].password);
+      if (isMatch) {
+        req.session.userid = rows[0].userid;
+        res.json({ success: true });
+      }
+      else {
+        res.json({ success: false });
+      }
+    }
+    else {
       res.json({ success: false });
     }
   } 
